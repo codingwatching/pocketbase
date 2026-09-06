@@ -2421,7 +2421,7 @@ func TestRecordDeleteWithMultipleRelationCascade(t *testing.T) {
 
 		rels := r.GetStringSlice("rels")
 		if !slices.Equal(rels, expected) {
-			t.Fatalf("Expected rels\n%v\ngot\n%v", expected, rels)
+			t.Fatalf("Record %q expected rels\n%v\ngot\n%v", r.Id, expected, rels)
 		}
 	}
 }
