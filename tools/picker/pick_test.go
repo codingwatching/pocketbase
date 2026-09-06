@@ -1,6 +1,7 @@
 package picker_test
 
 import (
+	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"errors"
 	"testing"
@@ -269,6 +270,13 @@ func TestPickFields(t *testing.T) {
 			false,
 			`{"id":"12","rel":{"title":"rel..."},"title":"lo"}`,
 		},
+		{
+			"jsonv1 values",
+			map[string]any{"a": "test\xc3", "b": jsontext.Value(`{"a":1,"a":2}`)},
+			"a, b",
+			false,
+			`{"a":"test�","b":{"a":2}}`,
+		},
 	}
 
 	for _, s := range scenarios {
@@ -284,7 +292,12 @@ func TestPickFields(t *testing.T) {
 				return
 			}
 
-			serialized, err := json.Marshal(result, json.Deterministic(true))
+			serialized, err := json.Marshal(
+				result,
+				json.Deterministic(true),
+				jsontext.AllowInvalidUTF8(true),
+				jsontext.AllowDuplicateNames(true),
+			)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -3,6 +3,7 @@ package router_test
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"encoding/xml"
 	"errors"
@@ -21,6 +22,7 @@ import (
 	validation "github.com/pocketbase/ozzo-validation/v4"
 	"github.com/pocketbase/pocketbase/tools/picker"
 	"github.com/pocketbase/pocketbase/tools/router"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 type unwrapTester struct {
@@ -428,10 +430,11 @@ func TestEventJSON(t *testing.T) {
 		"a": 123,
 		"b": true,
 		"c": "test",
-		"d": "\xc3", /* invalid utf8 char to test mangling */
+		"d": "\xc3",                         // invalid utf8 char to test mangling
+		"e": types.JSONRaw(`{"a":1,"a":2}`), // duplicated keys to ensure compliance with old data
 	}
 	expectedPickedBody := `{"a":123,"c":"test"}`
-	expectedFullBody := `{"a":123,"b":true,"c":"test","d":"�"}`
+	expectedFullBody := `{"a":123,"b":true,"c":"test","d":"�","e":{"a":2}}`
 
 	scenarios := []testResponseWriteScenario[any]{
 		{
@@ -1074,9 +1077,9 @@ func testEventResponseWrite[T any](
 		// try to deserialize into a map and then serialize again in a
 		// deterministic manner in case it is json
 		var jsonBody any
-		err = json.Unmarshal(rawBody, &jsonBody)
+		err = json.Unmarshal(rawBody, &jsonBody, jsontext.AllowDuplicateNames(true))
 		if err == nil {
-			normalized, err := json.Marshal(jsonBody, json.Deterministic(true))
+			normalized, err := json.Marshal(jsonBody, json.Deterministic(true), jsontext.AllowDuplicateNames(true))
 			if err != nil {
 				t.Fatalf("Failed to deterministicly serialize json body\n%s\ngot\n%v", jsonBody, err)
 			}

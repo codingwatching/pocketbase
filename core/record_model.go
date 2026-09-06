@@ -1333,7 +1333,9 @@ func (m Record) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
 		m.PublicExport(),
 		json.Deterministic(true),
-		// to preserve the old jsonv1 behavior in case of invalid data
+		// for compliance with old data (and slightly better performance)
+		jsontext.AllowDuplicateNames(true),
+		// preserve the old jsonv1 behavior in case of invalid data
 		jsontext.AllowInvalidUTF8(true),
 	)
 }

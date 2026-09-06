@@ -1413,14 +1413,15 @@ func TestRecordPublicExportAndMarshalJSON(t *testing.T) {
 	f3 := &core.SelectField{Name: "field3", MaxSelect: 2, Values: []string{"test1", "test2", "test3"}}
 	f4 := &core.TextField{Name: "field4", Hidden: true}
 	f5 := &core.TextField{Name: "field5", Hidden: true}
+	f6 := &core.JSONField{Name: "field6"}
 
 	colBase := core.NewBaseCollection("test_base")
 	colBase.Id = "_pbc_base_123"
-	colBase.Fields.Add(f1, f2, f3, f4, f5)
+	colBase.Fields.Add(f1, f2, f3, f4, f5, f6)
 
 	colAuth := core.NewAuthCollection("test_auth")
 	colAuth.Id = "_pbc_auth_123"
-	colAuth.Fields.Add(f1, f2, f3, f4, f5)
+	colAuth.Fields.Add(f1, f2, f3, f4, f5, f6)
 
 	scenarios := []struct {
 		name                  string
@@ -1439,7 +1440,7 @@ func TestRecordPublicExportAndMarshalJSON(t *testing.T) {
 			false,
 			nil,
 			nil,
-			`{"collectionId":"_pbc_base_123","collectionName":"test_base","expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"id":"test_id"}`,
+			`{"collectionId":"_pbc_base_123","collectionName":"test_base","expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"field6":{"a":1,"a":2},"id":"test_id"}`,
 		},
 		{
 			"[base] with email visibility",
@@ -1448,7 +1449,7 @@ func TestRecordPublicExportAndMarshalJSON(t *testing.T) {
 			false,
 			nil,
 			nil,
-			`{"collectionId":"_pbc_base_123","collectionName":"test_base","expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"id":"test_id"}`,
+			`{"collectionId":"_pbc_base_123","collectionName":"test_base","expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"field6":{"a":1,"a":2},"id":"test_id"}`,
 		},
 		{
 			"[base] with custom data",
@@ -1457,7 +1458,7 @@ func TestRecordPublicExportAndMarshalJSON(t *testing.T) {
 			true,
 			nil,
 			nil,
-			`{"collectionId":"_pbc_base_123","collectionName":"test_base","email":"test_email","emailVisibility":"test_invalid","expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"id":"test_id","password":"test_passwordHash","tokenKey":"test_tokenKey","unknown":"test_unknown","verified":true}`,
+			`{"collectionId":"_pbc_base_123","collectionName":"test_base","email":"test_email","emailVisibility":"test_invalid","expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"field6":{"a":1,"a":2},"id":"test_id","password":"test_passwordHash","tokenKey":"test_tokenKey","unknown":"test_unknown","verified":true}`,
 		},
 		{
 			"[base] with explicit hide and unhide fields",
@@ -1466,7 +1467,7 @@ func TestRecordPublicExportAndMarshalJSON(t *testing.T) {
 			true,
 			[]string{"field3", "field1", "expand", "collectionId", "collectionName", "email", "tokenKey", "unknown"},
 			[]string{"field4", "@pbInternalAbc"},
-			`{"emailVisibility":"test_invalid","field2":"field_2.png","field4":"field_4","id":"test_id","password":"test_passwordHash","verified":true}`,
+			`{"emailVisibility":"test_invalid","field2":"field_2.png","field4":"field_4","field6":{"a":1,"a":2},"id":"test_id","password":"test_passwordHash","verified":true}`,
 		},
 		{
 			"[base] trying to unhide custom fields without explicit WithCustomData",
@@ -1475,7 +1476,7 @@ func TestRecordPublicExportAndMarshalJSON(t *testing.T) {
 			true,
 			nil,
 			[]string{"field5", "@pbInternalAbc", "email", "tokenKey", "unknown"},
-			`{"collectionId":"_pbc_base_123","collectionName":"test_base","email":"test_email","emailVisibility":"test_invalid","expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"field5":"field_5","id":"test_id","password":"test_passwordHash","tokenKey":"test_tokenKey","unknown":"test_unknown","verified":true}`,
+			`{"collectionId":"_pbc_base_123","collectionName":"test_base","email":"test_email","emailVisibility":"test_invalid","expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"field5":"field_5","field6":{"a":1,"a":2},"id":"test_id","password":"test_passwordHash","tokenKey":"test_tokenKey","unknown":"test_unknown","verified":true}`,
 		},
 
 		// auth
@@ -1486,7 +1487,7 @@ func TestRecordPublicExportAndMarshalJSON(t *testing.T) {
 			false,
 			nil,
 			nil,
-			`{"collectionId":"_pbc_auth_123","collectionName":"test_auth","emailVisibility":false,"expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"id":"test_id","verified":true}`,
+			`{"collectionId":"_pbc_auth_123","collectionName":"test_auth","emailVisibility":false,"expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"field6":{"a":1,"a":2},"id":"test_id","verified":true}`,
 		},
 		{
 			"[auth] with email visibility",
@@ -1495,7 +1496,7 @@ func TestRecordPublicExportAndMarshalJSON(t *testing.T) {
 			false,
 			nil,
 			nil,
-			`{"collectionId":"_pbc_auth_123","collectionName":"test_auth","email":"test_email","emailVisibility":false,"expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"id":"test_id","verified":true}`,
+			`{"collectionId":"_pbc_auth_123","collectionName":"test_auth","email":"test_email","emailVisibility":false,"expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"field6":{"a":1,"a":2},"id":"test_id","verified":true}`,
 		},
 		{
 			"[auth] with custom data",
@@ -1504,7 +1505,7 @@ func TestRecordPublicExportAndMarshalJSON(t *testing.T) {
 			true,
 			nil,
 			nil,
-			`{"collectionId":"_pbc_auth_123","collectionName":"test_auth","emailVisibility":false,"expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"id":"test_id","unknown":"test_unknown","verified":true}`,
+			`{"collectionId":"_pbc_auth_123","collectionName":"test_auth","emailVisibility":false,"expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"field6":{"a":1,"a":2},"id":"test_id","unknown":"test_unknown","verified":true}`,
 		},
 		{
 			"[auth] with explicit hide and unhide fields",
@@ -1513,7 +1514,7 @@ func TestRecordPublicExportAndMarshalJSON(t *testing.T) {
 			true,
 			[]string{"field3", "field1", "expand", "collectionId", "collectionName", "email", "unknown"},
 			[]string{"field4", "@pbInternalAbc"},
-			`{"emailVisibility":false,"field2":"field_2.png","field4":"field_4","id":"test_id","verified":true}`,
+			`{"emailVisibility":false,"field2":"field_2.png","field4":"field_4","field6":{"a":1,"a":2},"id":"test_id","verified":true}`,
 		},
 		{
 			"[auth] trying to unhide custom fields without explicit WithCustomData",
@@ -1522,7 +1523,7 @@ func TestRecordPublicExportAndMarshalJSON(t *testing.T) {
 			true,
 			nil,
 			[]string{"field5", "@pbInternalAbc", "tokenKey", "unknown", "email"}, // emailVisibility:false has higher priority
-			`{"collectionId":"_pbc_auth_123","collectionName":"test_auth","emailVisibility":false,"expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"field5":"field_5","id":"test_id","unknown":"test_unknown","verified":true}`,
+			`{"collectionId":"_pbc_auth_123","collectionName":"test_auth","emailVisibility":false,"expand":{"test":123},"field1":"field_1�","field2":"field_2.png","field3":["test1","test2"],"field5":"field_5","field6":{"a":1,"a":2},"id":"test_id","unknown":"test_unknown","verified":true}`,
 		},
 	}
 
@@ -1533,6 +1534,7 @@ func TestRecordPublicExportAndMarshalJSON(t *testing.T) {
 		"field3":          []string{"test1", "test2"},
 		"field4":          "field_4",
 		"field5":          "field_5",
+		"field6":          types.JSONRaw(`{"a":1,"a":2}`), // intentionally duplicated to check serialization
 		"expand":          map[string]any{"test": 123},
 		"collectionId":    "m_id",   // should be always ignored
 		"collectionName":  "m_name", // should be always ignored
@@ -1558,6 +1560,7 @@ func TestRecordPublicExportAndMarshalJSON(t *testing.T) {
 			exportResult, err := json.Marshal(
 				m.PublicExport(),
 				json.Deterministic(true),
+				jsontext.AllowDuplicateNames(true),
 				jsontext.AllowInvalidUTF8(true),
 			)
 			if err != nil {

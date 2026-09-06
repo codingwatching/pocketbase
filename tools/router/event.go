@@ -206,7 +206,14 @@ func (e *Event) JSON(status int, data any) error {
 	e.setResponseHeaderIfEmpty(headerContentType, "application/json")
 	e.Response.WriteHeader(status)
 
-	return json.MarshalWrite(e.Response, data, jsontext.AllowInvalidUTF8(true))
+	return json.MarshalWrite(
+		e.Response,
+		data,
+		// for compliance with old data (and slightly better performance)
+		jsontext.AllowDuplicateNames(true),
+		// preserve the old jsonv1 behavior in case of invalid data
+		jsontext.AllowInvalidUTF8(true),
+	)
 }
 
 // XML writes an XML response.

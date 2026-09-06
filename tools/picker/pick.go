@@ -41,16 +41,19 @@ func Pick(data any, rawFields string) (any, error) {
 	// Note that invalid UTF8 characters are mangled for compatibility
 	// with earlier versions and to prevent unnecessary causing an error.
 	//
+	// Duplicated keys are also enabled for just in case of old jsonv1 data
+	// (new db entries are usually validated against the jsonv2 semantics).
+	//
 	// @todo research other approaches to avoid the double serialization
 	// ---
-	encoded, err := json.Marshal(data, jsontext.AllowInvalidUTF8(true))
+	encoded, err := json.Marshal(data, jsontext.AllowDuplicateNames(true), jsontext.AllowInvalidUTF8(true))
 	if err != nil {
 		return nil, err
 	}
 
 	var decoded any
 
-	err = json.Unmarshal(encoded, &decoded)
+	err = json.Unmarshal(encoded, &decoded, jsontext.AllowDuplicateNames(true))
 	if err != nil {
 		return nil, err
 	}
