@@ -1,7 +1,5 @@
 ## v0.40.3 (WIP)
 
-- Updated dark primary btn color contrast.
-
 - Write the status header for JSON responses only if the fields picker succeed or has acceptable fallback.
     _This is to allow custom response status code for failed json writes._
 
@@ -14,6 +12,8 @@
 - Updated the `json` field validator to check the `encoding/json/v2` semantics and allow duplicated keys on record marshalize for compliance with old jsonv1 data.
 
 - Fixed nested cascade delete of self-referenced relation records.
+
+- Minor UI fixes (updated dark primary btn color contrast, force reload the records list if the deleted record has self-referenced cascade relation field, etc.).
 
 - Bumped `golang.org/x/*` dependencies to silence security scanners ([#7829](https://github.com/pocketbase/pocketbase/discussions/7829)).
 
