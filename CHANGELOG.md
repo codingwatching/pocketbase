@@ -3,11 +3,13 @@
 - Minor UI improvements (updated dark primary btn contrast).
 
 - Write the status header for JSON responses only if the fields picker succeed or has acceptable fallback.
-    _This is to allow custom response status code in reaction to failed json writes._
+    _This is to allow custom response status code for failed json writes._
 
 - Fixed collection index validator to allow expressions with parenthesis in the optional `WHERE` clause.
 
 - Clamped arccosine to [-1,1] in the Harvesine formula for the `geoDistance()` filter function to workaround edge case related to float rounding errors for some coordinates.
+
+- Prevent unnecessery body chunk read if we already known that we are beyond the allowed limit.
 
 - Bumped `golang.org/x/*` dependencies to silence security scanners ([#7829](https://github.com/pocketbase/pocketbase/discussions/7829)).
 

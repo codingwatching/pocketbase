@@ -84,32 +84,39 @@ func applyBodyLimit(e *core.RequestEvent, limitBytes int64) error {
 	}
 
 	// replace the request body
-	//
-	// note: we don't use sync.Pool since the size of the elements could vary too much
-	// and it might not be efficient (see https://github.com/golang/go/issues/23199)
-	e.Request.Body = &limitedReader{ReadCloser: e.Request.Body, limit: limitBytes}
+	e.Request.Body = newLimitedReader(e.Request.Body, limitBytes)
 
 	return nil
+}
+
+func newLimitedReader(body io.ReadCloser, limitBytes int64) *limitedReader {
+	return &limitedReader{
+		ReadCloser: body,
+		limit:      limitBytes,
+		remaining:  limitBytes,
+	}
 }
 
 type limitedReader struct {
 	io.ReadCloser
 	limit     int64
-	totalRead int64
+	remaining int64
 }
 
 func (r *limitedReader) Read(b []byte) (int, error) {
+	if r.remaining <= 0 {
+		return 0, ErrRequestEntityTooLarge
+	}
+
+	if int64(len(b)) > r.remaining {
+		b = b[0:r.remaining]
+	}
+
 	n, err := r.ReadCloser.Read(b)
-	if err != nil {
-		return n, err
-	}
 
-	r.totalRead += int64(n)
-	if r.totalRead > r.limit {
-		return n, ErrRequestEntityTooLarge
-	}
+	r.remaining -= int64(n)
 
-	return n, nil
+	return n, err
 }
 
 // explicit casts to ensure that the main struct methods will be invoked
@@ -120,6 +127,7 @@ func (r *limitedReader) Reread() {
 	rereader, ok := r.ReadCloser.(router.Rereader)
 	if ok {
 		rereader.Reread()
+		r.remaining = r.limit
 	}
 }
 
