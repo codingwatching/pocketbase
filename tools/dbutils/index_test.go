@@ -57,10 +57,10 @@ func TestParseIndex(t *testing.T) {
 			`CREATE UNIQUE INDEX IF NOT EXISTS "schemaname".[indexname] on 'tablename' (
 				col0,
 				` + "`" + `col1` + "`" + `,
-				json_extract("col2", "$.a") asc,
+				json_extract("col2_multiline",` + "\n" + ` "$.a") asc,
 				"col3" collate NOCASE,
 				"col4" collate RTRIM desc
-			) where cast(test1 as int) = 1 and test2 != ''`,
+			) where cast(test1 as ` + "\n" + `int) = 1 and test2 != ''`,
 			dbutils.Index{
 				Unique:     true,
 				Optional:   true,
@@ -70,11 +70,11 @@ func TestParseIndex(t *testing.T) {
 				Columns: []dbutils.IndexColumn{
 					{Name: "col0"},
 					{Name: "col1"},
-					{Name: `json_extract("col2", "$.a")`, Sort: "ASC"},
+					{Name: `json_extract("col2_multiline",` + "\n" + ` "$.a")`, Sort: "ASC"},
 					{Name: `col3`, Collate: "NOCASE"},
 					{Name: `col4`, Collate: "RTRIM", Sort: "DESC"},
 				},
-				Where: "cast(test1 as int) = 1 and test2 != ''",
+				Where: "cast(test1 as \nint) = 1 and test2 != ''",
 			},
 		},
 	}
