@@ -15,6 +15,8 @@
 
 - Minor UI fixes (updated dark primary btn color contrast, force reload the records list if the deleted record has self-referenced cascade relation field, etc.).
 
+- Changed `$app` definition from TS type to interface ([#7834](https://github.com/pocketbase/pocketbase/issues/7834)).
+
 - Bumped `golang.org/x/*` dependencies to silence security scanners ([#7829](https://github.com/pocketbase/pocketbase/discussions/7829)).
 
 
