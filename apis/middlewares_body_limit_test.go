@@ -1,6 +1,7 @@
 package apis_test
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -39,6 +40,15 @@ func TestBodyLimitMiddleware(t *testing.T) {
 
 	pbRouter.POST("/a", testHandler) // default global BodyLimit check
 	pbRouter.POST("/b", testHandler).Bind(apis.BodyLimit(customLimit))
+	pbRouter.POST("/iof", func(e *core.RequestEvent) error {
+		// ensure that normal io methods still operate correctly
+		b, err := io.ReadAll(e.Request.Body)
+		if err != nil {
+			return err
+		}
+
+		return e.String(http.StatusOK, string(b))
+	}).Bind(apis.BodyLimit(customLimit))
 
 	mux, err := pbRouter.BuildMux()
 	if err != nil {
@@ -108,6 +118,14 @@ func TestBodyLimitMiddleware(t *testing.T) {
 			`"` + strings.Repeat("a", customLimit) + `"`,
 			true,
 			http.StatusRequestEntityTooLarge,
+		},
+		// ---
+		{
+			"io.ReadAll io.EOF exact limit check",
+			"/iof",
+			`"` + strings.Repeat("a", customLimit-2) + `"`,
+			true,
+			http.StatusOK,
 		},
 	}
 
