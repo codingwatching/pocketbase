@@ -1,6 +1,6 @@
 ## v0.40.3 (WIP)
 
-- Minor UI improvements (updated dark primary btn contrast).
+- Updated dark primary btn color contrast.
 
 - Write the status header for JSON responses only if the fields picker succeed or has acceptable fallback.
     _This is to allow custom response status code for failed json writes._
@@ -11,7 +11,9 @@
 
 - Prevent unnecessary body chunk read if we already known that we are beyond the allowed limit.
 
-- Updated the `json` field validator to check the `encoding/json/v2` semantics and allow duplicated keys when serializing for compliance with old jsonv1 data.
+- Updated the `json` field validator to check the `encoding/json/v2` semantics and allow duplicated keys on record marshalize for compliance with old jsonv1 data.
+
+- Fixed nested cascade delete of self-referenced relation records.
 
 - Bumped `golang.org/x/*` dependencies to silence security scanners ([#7829](https://github.com/pocketbase/pocketbase/discussions/7829)).
 

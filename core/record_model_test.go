@@ -2327,13 +2327,102 @@ func TestRecordDelete(t *testing.T) {
 	}
 	// ensure that the json rel fields were prefixed
 	joinedQueries := strings.Join(calledQueries, " ")
-	expectedRelManyPart := "SELECT `demo1`.* FROM `demo1` WHERE EXISTS (SELECT 1 FROM json_each(CASE WHEN iif(json_valid([[demo1.rel_many]]), json_type([[demo1.rel_many]])='array', FALSE) THEN [[demo1.rel_many]] ELSE json_array([[demo1.rel_many]]) END) {{__je__}} WHERE [[__je__.value]]='"
+	expectedRelManyPart := "SELECT `demo1`.`id` FROM `demo1` WHERE EXISTS (SELECT 1 FROM json_each(CASE WHEN iif(json_valid([[demo1.rel_many]]), json_type([[demo1.rel_many]])='array', FALSE) THEN [[demo1.rel_many]] ELSE json_array([[demo1.rel_many]]) END) {{__je__}} WHERE [[__je__.value]]='"
 	if !strings.Contains(joinedQueries, expectedRelManyPart) {
 		t.Fatalf("(rec3) Expected the cascade delete to call the query \n%v, got \n%v", expectedRelManyPart, calledQueries)
 	}
-	expectedRelOnePart := "SELECT `demo1`.* FROM `demo1` WHERE (`demo1`.`rel_one`='"
+	expectedRelOnePart := "SELECT `demo1`.`id` FROM `demo1` WHERE (`demo1`.`rel_one`='"
 	if !strings.Contains(joinedQueries, expectedRelOnePart) {
 		t.Fatalf("(rec3) Expected the cascade delete to call the query \n%v, got \n%v", expectedRelOnePart, calledQueries)
+	}
+}
+
+func TestRecordDeleteWithMultipleRelationCascade(t *testing.T) {
+	t.Parallel()
+
+	app, _ := tests.NewTestApp()
+	defer app.Cleanup()
+
+	// create a mock collection with self referencing multiple relation field
+	// ---
+	collection := core.NewBaseCollection("test")
+	err := app.Save(collection)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// for simpler mocks
+	collection.Fields.GetByName("id").(*core.TextField).Min = 1
+
+	collection.Fields.Add(&core.RelationField{
+		Name:          "rels",
+		CollectionId:  collection.Id,
+		MaxSelect:     99,
+		CascadeDelete: true,
+	})
+
+	err = app.Save(collection)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// create mock records
+	// ---
+	relsData := map[string][]string{
+		"a": nil,
+		"b": {"a"},
+		"c": {"a", "b"},
+		"d": {},
+		"e": {"c", "d"},
+	}
+	for id, rels := range relsData {
+		record := core.NewRecord(collection)
+		record.Set("id", id)
+		record.Set("rels", rels)
+		err = app.SaveNoValidate(record) // map is not ordered
+		if err != nil {
+			t.Fatalf("failed to create mock record: %v", err)
+		}
+	}
+
+	// trigger cascade delete for the top record
+	// ---
+	aRecord, err := app.FindRecordById(collection, "a")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = app.Delete(aRecord)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// verify cascade delete
+	// ---
+	expectedRels := map[string][]string{
+		"d": {},
+		"e": {"d"},
+	}
+
+	allRecords, err := app.FindAllRecords(collection)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(allRecords) != len(expectedRels) {
+		t.Fatalf("Expected %d remaining records, got %d", len(expectedRels), len(allRecords))
+	}
+
+	for _, r := range allRecords {
+		expected, ok := expectedRels[r.Id]
+		if !ok {
+			t.Fatalf("Record %q wasn't found in %v", r.Id, expectedRels)
+		}
+
+		rels := r.GetStringSlice("rels")
+		if !slices.Equal(rels, expected) {
+			t.Fatalf("Expected rels\n%v\ngot\n%v", expected, rels)
+		}
 	}
 }
 
