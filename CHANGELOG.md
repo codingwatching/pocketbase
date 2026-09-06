@@ -1,4 +1,4 @@
-## v0.40.3 (WIP)
+## v0.40.3
 
 - Write the status header for JSON responses only if the fields picker succeed or has acceptable fallback.
     _This is to allow custom response status code for failed json writes._
